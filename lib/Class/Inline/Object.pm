@@ -7,10 +7,16 @@ use feature 'state';
 use Class::Inline::Object::Meta;
 
 sub create {
-    my ($class, $base, $res) = @_;
+    my ($class, $base, $res, $opts) = @_;
     if (not $base) {
         print STDERR "Can't initialise class{} without base object\n";
         exit 1;
+    }
+
+    if (ref $base) {
+        if ($base->{_meta} and $base->{_meta}->{role}) {
+            die "Cannot extend a role\n";
+        }
     }
 
     state $ref = 0;
@@ -22,6 +28,7 @@ sub create {
       },
     };
 
+    if ($opts) { $new->{_meta} = { %{$new->{_meta}}, %$opts }; } 
     if ($res and ref($res) eq 'HASH') {
         $new = { %$new, %$res };
     }
@@ -48,6 +55,17 @@ sub _meta {
 
 sub isobject { return 1 }
 sub new { return bless $_[0], ref($_[0]) }
+
+sub _consume_role {
+    my ($class, $role) = @_;
+    {
+        no strict 'refs';
+        no warnings 'redefine';
+        for my $method (keys %{"${role}::"}) {
+            *{"${class}::${method}"} = *{"${role}::${method}"};
+        }
+    }
+}
 
 1;
 __END__

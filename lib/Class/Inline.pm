@@ -14,7 +14,7 @@ sub import {
     warnings->import();
     strict->import();
     
-    my @methods = qw(object class lambda);
+    my @methods = qw(object class consume role lambda);
     {
         no strict 'refs';
         for (@methods) {
@@ -27,6 +27,28 @@ sub class(&;$) {
     my ($ref, $base) = @_;
     return Class::Inline::Object->create($base, $ref->($base));
     #return bless {}, 'Object';
+}
+
+sub role(&;$) {
+    my ($ref) = @_;
+    return Class::Inline::Object->create('Object', undef, { role => 1 });
+}
+
+sub consume(&;$) {
+    my ($ref, $role) = @_;
+    if (ref $role) {
+        if ($role->{_meta} and not $role->{_meta}->{role}) {
+            die ref($role) . " is not a valid role\n";
+        }
+        else {
+            my $nc = Class::Inline::Object->create("Object", undef, { consume => ref($role) });
+            Class::Inline::Object::_consume_role(ref($nc), ref($role));
+            return $nc;
+        }
+    }
+    else {
+        die "Can only consume a Class::Inline role\n";
+    }
 }
 
 sub object { return "Object" }

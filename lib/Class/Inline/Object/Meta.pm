@@ -20,10 +20,23 @@ sub method {
 sub extends {
     my ($self, $ob) = @_;
     my $pkg  = $self->_pkg;
-    my $base = ref $ob ? ref $ob : $ob;
-    eval "use $base";
-    warn "Could not extend $base: $@"
-        if $@;
+    my $base;
+    if (ref $ob) {
+        if ($ob->{_meta} and $ob->{_meta}->{role}) {
+            die "Cannot extend a role\n";
+        }
+
+        $base = ref $ob;
+    }
+    else {
+        $base = $ob;
+    }
+
+    if (not ref $ob) {
+        eval "use $base";
+        warn "Could not extend $base: $@"
+            if $@;
+    }
 
     {
         no strict 'refs';
