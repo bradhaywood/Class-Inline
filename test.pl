@@ -1,6 +1,10 @@
 use Class::Inline;
 my $moo = class {} object; 
-$moo->_meta->method("greet", sub { say "Hello, $_[1]!" });
+$moo->_meta->method("greet", sub {
+    my ($self, $name) = @_;
+    say "Hello, $name!";
+});
+
 $moo->greet("World");
 
 my $foo = class {} $moo;

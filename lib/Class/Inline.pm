@@ -26,7 +26,6 @@ sub import {
 sub class(&;$) {
     my ($ref, $base) = @_;
     return Class::Inline::Object->create($base, $ref->($base));
-    #return bless {}, 'Object';
 }
 
 sub role(&;$) {

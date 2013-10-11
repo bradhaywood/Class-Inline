@@ -43,6 +43,10 @@ sub create {
         } else {
             @{"${resclass}::ISA"} = ("Class::Inline::Object");
         }
+
+        if ($opts and $opts->{role}) {
+            @{"${resclass}::ISA"} = (@{"${resclass}::ISA"}, "Class::Inline::Object::Role");
+        }
     }
 
     return $new;
